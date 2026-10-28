@@ -1,0 +1,90 @@
+╔══════════════════════════════════════════════════╗
+║   GUIA: Criar servidor GRÁTIS no Oracle Cloud     ║
+║   Tempo: ~10 minutos                             ║
+║   Custo: R$ 0 (grátis pra sempre)                ║
+╚══════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PASSO 1 - Criar conta (5 min)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Abra: https://www.oracle.com/cloud/free/
+2. Clique em START FOR FREE (canto superior)
+3. Preencha:
+   - País: Brazil
+   - Nome, email, senha
+4. Confirme o email que chegou
+5. Adicione cartão de crédito (SÓ pra verificar, NÃO cobra)
+
+⚠️ IMPORTANTE: Oracle cobra R$0. Eles pedem cartão apenas
+   pra confirmar que é pessoa real.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PASSO 2 - Criar o servidor (5 min)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. No painel, clique no menu HAMBURGUER (3 linhas) canto esq.
+2. Compute > Instances > CREATE INSTANCE
+3. Configure assim:
+
+   ┌── IMAGE ──────────────────────────┐
+   │ Click "CHANGE IMAGE"              │
+   │ Canonical Ubuntu > Ubuntu 22.04   │
+   └───────────────────────────────────┘
+
+   ┌── SHAPE ──────────────────────────┐
+   │ Click "CHANGE SHAPE"              │
+   │ Select: VM.Standard.A1.Flex       │
+   │ OCPU: 4    Memory: 24 GB          │
+   └───────────────────────────────────┘
+
+   ┌── STORAGE ────────────────────────┐
+   │ Boot volume: 200 GB               │
+   └───────────────────────────────────┘
+
+   ┌── SSH KEY ────────────────────────┐
+   │ Select: "Generate new key pair"   │
+   │ Name: nexusplay                   │
+   │ Click: SAVE PRIVATE KEY (.key)    │
+   │ ⚠️ GUARDE ESSE ARQUIVO!           │
+   └───────────────────────────────────┘
+
+4. Clique em CREATE
+5. Espere o status virar "RUNNING" (~2 min)
+6. ANOTE O IP PÚBLICO (parece: 129.153.xx.xx)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PASSO 3 - Abrir porta 5000 (2 min)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Menu: Networking > Virtual Cloud Networks
+2. Clique na sua VCN (lista)
+3. Clique na SUBNET (nome com "subnet")
+4. Aba: Security Lists > Default Security List
+5. Clique: ADD INGRESS RULES
+6. Preencha:
+   - Source CIDR: 0.0.0.0/0
+   - Destination Port: 5000
+7. Clique: ADD INGRESS RULE
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PASSO 4 - Me mandar os dados
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Me manda aqui:
+   ✅ O IP público da VM
+   ✅ O caminho do arquivo .key que baixou
+
+Exemplo: "IP: 129.153.10.50, chave: C:\Users\admin\Downloads\nexusplay-key.pem"
+
+EU FAÇO O RESTO DO DEPLOY PRA VOCÊ! 🚀
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ DEPOIS DO DEPLOY, SEU SITE FICA:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🌐 http://SEU_IP:5000  (nunca mais cai!)
+📱 Mesmo link no celular
+🔐 admin123 no painel
+⏱️ 24 horas ligado, 7 dias por semana
+💰 Custo: R$ 0 para sempre

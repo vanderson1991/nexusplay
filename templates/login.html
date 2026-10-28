@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Entrar — NexusPlay{% endblock %}
+
+{% block content %}
+<div class="login-container">
+  <div class="login-box">
+    <span class="lock-icon">🔐</span>
+    <h1>Painel Admin</h1>
+    <p>Digite a senha para entrar</p>
+
+    <form method="POST" action="/login">
+      <input type="password" name="password" placeholder="••••••••"
+             autofocus required>
+      <button type="submit">Entrar</button>
+    </form>
+
+    <a href="/" class="login-back">← Voltar para a loja</a>
+  </div>
+</div>
+{% endblock %}

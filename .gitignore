@@ -1,0 +1,17 @@
+# Nao subir jogos/capas pro Git (ficam so no servidor)
+uploads/
+*.zip
+*.rar
+*.7z
+
+# Logs e temp
+watchdog.log
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Instaladores e lixo
+*.exe
+*.msi
+test_*

@@ -1,0 +1,68 @@
+╔══════════════════════════════════════════════════╗
+║   GUIA RÁPIDO - NexusPlay no Render.com          ║
+║   SEM CARTÃO • GRÁTIS • 3 MINUTOS                ║
+╚══════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PASSO 1 - Criar conta GitHub (2 min) - SE NÃO TIVER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Abra https://github.com
+2. Click SIGN UP
+3. Email, senha, username -> Create account
+4. Confirme o email
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PASSO 2 - Criar conta Render (30 seg)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Abra https://render.com
+2. Click GET STARTED FOR FREE
+3. Cadastre com sua conta GitHub
+   (SEM cartão de crédito!)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PASSO 3 - Subir pro GitHub (5 min)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Abra https://github.com/new
+2. Nome: nexusplay
+3. Deixe PUBLIC
+4. Click CREATE REPOSITORY
+
+5. Rode esses comandos no PowerShell:
+   cd C:\Users\admin\Desktop\pc\game-store
+   git init
+   git add .
+   git commit -m "NexusPlay"
+   git branch -M main
+   git remote add origin https://github.com/SEU-USUARIO/nexusplay.git
+   git push -u origin main
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PASSO 4 - Deploy no Render (2 min)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. No Render: Click NEW + > WEB SERVICE
+2. Conecte seu GitHub (dá permissão)
+3. Escolha o repo "nexusplay"
+4. Configure:
+   - Name: nexusplay
+   - Runtime: Python 3
+   - Build: pip install -r requirements.txt
+   - Start: python app.py
+5. Plan: FREE
+6. Click CREATE WEB SERVICE
+
+Espere ~3 min buildando...
+Termina com: https://nexusplay.onrender.com
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ ✅ PRONTO!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌐 Site: https://SEU-USUARIO.onrender.com
+📱 Celular: mesmo link
+🔐 Admin: /login senha admin123
+💰 Custo: R$ 0
+🔓 Sem cartão de crédito
+
+⚠️ LIMITAÇÕES DO PLANO GRÁTIS:
+- Só 1 GB de jogos (jogos pequenos)
+- Dorme após 15 min sem visitas
+- Pra acordar: entra no site de novo

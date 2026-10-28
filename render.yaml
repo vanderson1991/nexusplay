@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: nexusplay
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: ADMIN_PASSWORD
+        value: admin123
+      - key: PYTHON_VERSION
+        value: 3.11.0
+    plan: free

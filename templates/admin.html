@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% block title %}📦 Painel Admin — NexusPlay{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+  <h1>📦 Painel de Administração</h1>
+
+  <!-- UPLOAD FORM -->
+  <div class="upload-form">
+    <h2>➕ Adicionar Novo Jogo</h2>
+    <form id="uploadForm" method="POST" action="/admin/upload" enctype="multipart/form-data">
+      <div class="form-group">
+        <label>📝 Título do Jogo</label>
+        <input type="text" name="title" id="gameTitle"
+               placeholder="Ex: GTA San Andreas" required>
+      </div>
+
+      <div class="form-group">
+        <label>📋 Descrição</label>
+        <textarea name="description" id="gameDesc"
+                  placeholder="Descreva o jogo..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>🏷️ Categoria</label>
+        <select name="category" id="gameCategory" class="cat-select">
+          <option value="">Selecione uma categoria...</option>
+          {% for c in categories %}
+          <option value="{{ c }}">{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>📦 Arquivo do Jogo (.zip, .rar, .7z)</label>
+          <input type="file" name="game_file" id="gameFile"
+                 accept=".zip,.rar,.7z">
+          <div id="fileInfo" style="color:var(--muted);font-size:0.85rem;margin-top:6px;display:none;"></div>
+        </div>
+
+        <div class="form-group">
+          <label>🖼️ Imagem de Capa (opcional)</label>
+          <input type="file" name="cover_file" id="coverFile" accept=".png,.jpg,.jpeg,.gif,.webp">
+        </div>
+      </div>
+
+      <!-- PROGRESS BAR -->
+      <div id="progressContainer" style="display:none;margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span id="progressText" style="color:var(--text);font-weight:600;">Enviando...</span>
+          <span id="progressPercent" style="color:var(--accent2);font-weight:600;">0%</span>
+        </div>
+        <div style="width:100%;height:28px;background:var(--bg);border-radius:14px;overflow:hidden;border:1px solid var(--border);">
+          <div id="progressBar" style="width:0%;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:14px;transition:width 0.3s;"></div>
+        </div>
+        <div id="progressDetails" style="color:var(--muted);font-size:0.85rem;margin-top:6px;"></div>
+        <div id="progressStatus" style="color:var(--muted);font-size:0.8rem;margin-top:4px;"></div>
+      </div>
+
+      <button type="submit" class="btn-upload" id="btnUpload">📤 Enviar Jogo</button>
+      <div id="uploadHint" style="color:var(--muted);font-size:0.82rem;margin-top:10px;text-align:center;">
+        💡 Arquivos grandes são enviados em blocos. Se cair, continua de onde parou!
+      </div>
+    </form>
+  </div>
+
+  <!-- GAME LIST -->
+  <div class="admin-games">
+    <h2>🎮 Jogos Publicados ({{ games|length }})</h2>
+
+    {% if games %}
+      {% for game in games %}
+      <div class="admin-game-item">
+        {% if game.cover != "default.png" %}
+          <img src="/covers/{{ game.cover }}" alt="{{ game.title }}">
+        {% else %}
+          <div style="width:80px;height:50px;display:flex;align-items:center;justify-content:center;background:var(--bg);border-radius:8px;font-size:1.5rem;">🎮</div>
+        {% endif %}
+        <div class="info">
+          <h4>{{ game.title }}
+            {% if game.category %} <span class="cat-badge">{{ game.category }}</span>{% endif %}
+          </h4>
+          <span>
+            📦 {{ "%.1f"|format(game.size / 1073741824) if game.size > 1073741824 else "%.0f"|format(game.size / 1048576) }} {{ "GB" if game.size > 1073741824 else "MB" }}
+            &nbsp;|&nbsp; ⬇️ {{ game.downloads }} downloads
+            &nbsp;|&nbsp; 📅 {{ game.created_at }}
+          </span>
+        </div>
+        <form method="POST" action="/admin/delete/{{ game.id }}"
+              onsubmit="return confirm('Tem certeza que quer apagar {{ game.title }}?')">
+          <button type="submit" class="btn-delete">🗑️ Apagar</button>
+        </form>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p style="color:var(--muted); text-align:center; padding:30px;">
+        Nenhum jogo publicado ainda.
+      </p>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+// ============================================================
+//  UPLOAD EM BLOCOS - RETOMAVEL (se cair, continua!)
+// ============================================================
+const CHUNK = 8 * 1024 * 1024; // 8 MB por bloco
+
+function fmtSize(n) {
+  if (n >= 1073741824) return (n/1073741824).toFixed(2) + " GB";
+  if (n >= 1048576) return (n/1048576).toFixed(1) + " MB";
+  return (n/1024).toFixed(0) + " KB";
+}
+
+// Gera ID unico de upload (fica no sessionStorage pra retomar)
+function getUploadId(file) {
+  const key = "upload_" + file.name + "_" + file.size + "_" + file.lastModified;
+  let id = sessionStorage.getItem(key);
+  if (!id) {
+    id = "u" + Date.now() + Math.random().toString(36).slice(2, 10);
+    sessionStorage.setItem(key, id);
+  }
+  return id;
+}
+
+function clearUploadId(file) {
+  const key = "upload_" + file.name + "_" + file.size + "_" + file.lastModified;
+  sessionStorage.removeItem(key);
+}
+
+// Mostra tamanho do arquivo
+document.getElementById("gameFile").addEventListener("change", function(e) {
+  const file = e.target.files[0];
+  const info = document.getElementById("fileInfo");
+  if (file) {
+    info.style.display = "block";
+    info.textContent = "Selecionado: " + file.name + " (" + fmtSize(file.size) + ")";
+  } else {
+    info.style.display = "none";
+  }
+});
+
+// Submit com upload em blocos
+document.getElementById("uploadForm").addEventListener("submit", async function(e) {
+  const fileInput = document.getElementById("gameFile");
+  const file = fileInput.files[0];
+
+  // Se nao tem arquivo ou e pequeno, usa upload normal
+  if (!file || file.size <= CHUNK) {
+    return; // deixa o form enviar normal
+  }
+
+  e.preventDefault();
+
+  const title = document.getElementById("gameTitle").value.trim();
+  const desc = document.getElementById("gameDesc").value;
+  const category = document.getElementById("gameCategory").value;
+  const btn = document.getElementById("btnUpload");
+  const container = document.getElementById("progressContainer");
+  const bar = document.getElementById("progressBar");
+  const percent = document.getElementById("progressPercent");
+  const text = document.getElementById("progressText");
+  const details = document.getElementById("progressDetails");
+  const status = document.getElementById("progressStatus");
+
+  const uploadId = getUploadId(file);
+  const total = file.size;
+
+  // Mostra barra
+  container.style.display = "block";
+  btn.disabled = true;
+  btn.textContent = "⏳ Enviando...";
+
+  // Verifica se ja tem upload parcial (retomada)
+  let startOffset = 0;
+  try {
+    const checkResp = await fetch("/admin/upload/check", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({upload_id: uploadId})
+    });
+    const check = await checkResp.json();
+    if (check.received > 0 && check.received < total) {
+      startOffset = check.received;
+      status.textContent = "🔄 Retomando de onde parou: " + fmtSize(startOffset);
+    }
+  } catch(err) {}
+
+  // Envia em blocos
+  let offset = startOffset;
+  let chunksSent = 0;
+
+  while (offset < total) {
+    const end = Math.min(offset + CHUNK, total);
+    const blob = file.slice(offset, end);
+    const formData = new FormData();
+    formData.append("chunk", blob, "chunk_" + offset);
+    formData.append("upload_id", uploadId);
+    formData.append("offset", offset);
+    formData.append("total_size", total);
+    formData.append("filename", file.name);
+    formData.append("title", title);
+    formData.append("description", desc);
+    formData.append("category", category);
+
+    let retries = 0;
+    let done = false;
+
+    while (!done && retries < 5) {
+      try {
+        const resp = await fetch("/admin/upload/chunk", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!resp.ok) throw new Error("HTTP " + resp.status);
+
+        const result = await resp.json();
+        offset = result.received;
+        done = true;
+
+        const pct = Math.round(offset * 100 / total);
+        bar.style.width = pct + "%";
+        percent.textContent = pct + "%";
+        details.textContent = fmtSize(offset) + " / " + fmtSize(total) +
+                              "  (bloco " + (++chunksSent) + ")";
+        status.textContent = "Enviando bloco de 8 MB...";
+
+      } catch(err) {
+        retries++;
+        status.textContent = "⚠️ Falha no bloco, tentando novamente (" + retries + "/5)...";
+        await new Promise(r => setTimeout(r, 1000 * retries));
+      }
+    }
+
+    if (!done) {
+      text.textContent = "❌ Falhou depois de 5 tentativas!";
+      status.textContent = "Seu progresso foi salvo. Clique em Enviar novamente para retomar.";
+      btn.disabled = false;
+      btn.textContent = "📤 Enviar (retomar)";
+      return;
+    }
+  }
+
+  // Finaliza - envia capa e registra
+  text.textContent = "✅ Finalizando...";
+  status.textContent = "Registrando jogo...";
+
+  const finishForm = new FormData();
+  finishForm.append("upload_id", uploadId);
+  finishForm.append("title", title);
+  finishForm.append("description", desc);
+  finishForm.append("category", category);
+  const cover = document.getElementById("coverFile").files[0];
+  if (cover) finishForm.append("cover_file", cover);
+
+  try {
+    const resp = await fetch("/admin/upload/finish", {
+      method: "POST",
+      body: finishForm
+    });
+    const result = await resp.json();
+
+    if (result.ok) {
+      clearUploadId(file);
+      text.textContent = "🎉 Jogo adicionado com sucesso!";
+      percent.textContent = "100%";
+      bar.style.width = "100%";
+      status.textContent = "Redirecionando...";
+      window.location.href = "/admin";
+    } else {
+      throw new Error(result.error || "erro");
+    }
+  } catch(err) {
+    text.textContent = "❌ Erro ao finalizar: " + err.message;
+    btn.disabled = false;
+    btn.textContent = "📤 Tentar novamente";
+  }
+});
+</script>
+{% endblock %}

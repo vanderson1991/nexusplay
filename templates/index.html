@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}NexusPlay — Baixe seus jogos favoritos{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <div class="hero-badge">🎮 Loja de Jogos</div>
+  <h1>Bem-vindo à <span class="grad">NexusPlay</span></h1>
+  <p>Baixe seus jogos favoritos de forma rápida e gratuita</p>
+
+  <form class="search-box" method="GET" action="/">
+    <input type="text" name="q" placeholder="🔍 Buscar jogos..."
+           value="{{ query }}">
+    {% if cat %}<input type="hidden" name="cat" value="{{ cat }}">{% endif %}
+    <button type="submit">Buscar</button>
+  </form>
+</div>
+
+<!-- BARRA DE CATEGORIAS -->
+{% if cat_counts %}
+<div class="cat-filter-bar">
+  <a href="/" class="cat-btn {{ 'active' if not cat else '' }}">
+    🎯 Todos <span class="count">{{ cat_counts.values()|sum }}</span>
+  </a>
+  {% for c, n in categories %}
+  <a href="/?cat={{ c|urlencode }}" class="cat-btn {{ 'active' if cat == c else '' }}">
+    {{ c }} <span class="count">{{ n }}</span>
+  </a>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if games %}
+  {% if cat %}
+  <div style="text-align:center;padding:10px 20px 0;color:var(--muted);font-size:0.9rem;">
+    Mostrando categoria <strong style="color:var(--accent3)">{{ cat }}</strong>
+    — <a href="/" style="color:var(--accent3);">limpar filtro</a>
+  </div>
+  {% endif %}
+
+  <div class="games-grid">
+    {% for game in games %}
+    <div class="game-card">
+      {% if game.cover != "default.png" %}
+        <img class="game-cover" src="/covers/{{ game.cover }}" alt="{{ game.title }}">
+      {% else %}
+        <div class="game-cover">🎮</div>
+      {% endif %}
+      <div class="game-info">
+        {% if game.category %}
+        <span class="cat-badge">{{ game.category }}</span>
+        {% endif %}
+        <h3 style="margin-top:{{ '8px' if game.category else '0' }}">{{ game.title }}</h3>
+        <p>{{ game.description }}</p>
+        <div class="game-meta">
+          <span>📦 {{ "%.1f"|format(game.size / 1073741824) if game.size > 1073741824 else "%.0f"|format(game.size / 1048576) }} {{ "GB" if game.size > 1073741824 else "MB" }}</span>
+          <span>⬇️ {{ game.downloads }} downloads</span>
+        </div>
+        <a href="/download/{{ game.id }}" class="btn-download">
+          <span>⬇️ Baixar Jogo</span>
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="empty">
+    <div class="icon">🕹️</div>
+    <h2>{{ "Nenhum jogo encontrado" if (query or cat) else "Nenhum jogo disponível ainda" }}</h2>
+    <p>
+      {% if cat %}
+        Nenhum jogo na categoria "{{ cat }}". <a href="/" style="color:var(--accent3)">Ver todos</a>
+      {% elif query %}
+        Tente outro termo de busca.
+      {% else %}
+        Volte em breve! 🚀
+      {% endif %}
+    </p>
+  </div>
+{% endif %}
+
+{% endblock %}

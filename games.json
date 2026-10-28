@@ -1,0 +1,13 @@
+[
+  {
+    "id": "testdl12345",
+    "title": "Jogo Teste Download",
+    "description": "Para testar retomada de download",
+    "category": "Acao",
+    "file": "test_download.zip",
+    "cover": "default.png",
+    "size": 52428800,
+    "downloads": 10,
+    "created_at": "27/10/2026 21:40"
+  }
+]

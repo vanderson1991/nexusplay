@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed"/>
+      <stop offset="100%" style="stop-color:#a855f7"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c084fc"/>
+      <stop offset="100%" style="stop-color:#e9d5ff"/>
+    </linearGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#7c3aed" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+  <!-- Background -->
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- Glow ring -->
+  <rect x="3" y="3" width="58" height="58" rx="12" fill="none" stroke="url(#glow)" stroke-width="1.5" opacity="0.6"/>
+  <!-- N letter -->
+  <text x="32" y="44" font-family="Arial Black,Arial,sans-serif" font-size="36" font-weight="900"
+        fill="white" text-anchor="middle" filter="url(#shadow)">N</text>
+  <!-- Play triangle -->
+  <polygon points="44,14 56,22 44,30" fill="white" opacity="0.9"/>
+  <!-- Sparkles -->
+  <circle cx="12" cy="12" r="2" fill="#e9d5ff" opacity="0.8"/>
+  <circle cx="54" cy="50" r="1.5" fill="#c084fc" opacity="0.7"/>
+  <circle cx="14" cy="52" r="1" fill="#e9d5ff" opacity="0.6"/>
+</svg>

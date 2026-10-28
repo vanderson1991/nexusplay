@@ -1,0 +1,21 @@
+[Unit]
+Description=NexusPlay Game Store
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/nexusplay
+Environment="PATH=/home/ubuntu/nexusplay/venv/bin"
+ExecStart=/home/ubuntu/nexusplay/venv/bin/python app.py
+Restart=always
+RestartSec=10
+# Garante que nunca fica offline
+WatchdogSec=60
+
+# Limites de recursos
+LimitNOFILE=65535
+TimeoutStartSec=120
+
+[Install]
+WantedBy=multi-user.target
