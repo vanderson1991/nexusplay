@@ -49,6 +49,9 @@
         {% if game.category %}
         <span class="cat-badge">{{ game.category }}</span>
         {% endif %}
+        {% if game.external_url %}
+        <span class="cat-badge">☁️ Nuvem</span>
+        {% endif %}
         <h3 style="margin-top:{{ '8px' if game.category else '0' }}">{{ game.title }}</h3>
         <p>{{ game.description }}</p>
         <div class="game-meta">

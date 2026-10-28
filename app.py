@@ -279,6 +279,79 @@ def upload_game():
 
 
 # ============================================================
+#  PUBLICAR JOGO NA NUVEM GRATIS (Internet Archive - 1 TB por jogo)
+#  O arquivo fica no Internet Archive e o botao Baixar redireciona
+#  pro link direto. Nao ocupa espaco no servidor!
+# ============================================================
+@app.route("/admin/upload_link", methods=["POST"])
+def upload_link():
+    if not is_admin():
+        return redirect(url_for("login"))
+
+    title = request.form.get("title", "").strip()
+    description = request.form.get("description", "").strip()
+    category = request.form.get("category", "").strip()
+    external_url = request.form.get("external_url", "").strip()
+    cover_file = request.files.get("cover_file")
+    try:
+        size = int(request.form.get("size", 0) or 0)
+    except ValueError:
+        size = 0
+
+    # Aceita tamanho digitado livre: "32 GB", "500 MB", "1.5gb"...
+    if size <= 0:
+        import re as _re
+        raw = request.form.get("size_human", "").strip().upper().replace(",", ".")
+        m = _re.search(r"([\d.]+)\s*(TB|GB|MB|KB)?", raw)
+        if m:
+            try:
+                num = float(m.group(1))
+                mult = {"TB": 1024 ** 4, "GB": 1024 ** 3,
+                        "MB": 1024 ** 2, "KB": 1024}.get(m.group(2) or "MB", 1024 ** 2)
+                size = int(num * mult)
+            except ValueError:
+                size = 0
+
+    if not title:
+        flash("O titulo e obrigatorio!", "error")
+        return redirect(url_for("admin"))
+    if not external_url.startswith("http"):
+        flash("Cole o link do arquivo na nuvem (comecando com http)", "error")
+        return redirect(url_for("admin"))
+
+    game_id = uuid.uuid4().hex[:12]
+    cover_filename = "default.png"
+    if cover_file and cover_file.filename:
+        if allowed_file(cover_file.filename, ALLOWED_IMG):
+            cext = os.path.splitext(cover_file.filename)[1].lower()
+            cover_filename = f"{game_id}{cext}"
+            cover_file.save(os.path.join(COVERS_DIR, cover_filename))
+
+    games = load_games()
+    games.append({
+        "id": game_id,
+        "title": title,
+        "description": description,
+        "category": category,
+        "file": "",
+        "cover": cover_filename,
+        "external_url": external_url,
+        "size": size,
+        "downloads": 0,
+        "created_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
+    })
+    save_games(games)
+
+    # Responde JSON pro script publicar_jogo.py, ou redireciona pro painel
+    if (request.headers.get("X-Requested-With") == "XMLHttpRequest"
+            or request.accept_mimetypes.best == "application/json"):
+        return jsonify({"ok": True, "id": game_id, "title": title})
+
+    flash(f"Jogo '{title}' publicado na nuvem!", "success")
+    return redirect(url_for("admin"))
+
+
+# ============================================================
 #  ROTAS EXISTENTES
 # ============================================================
 @app.route("/")
@@ -354,6 +427,14 @@ def download(game_id):
     if not game:
         flash("Jogo nao encontrado!", "error")
         return redirect(url_for("index"))
+
+    # ---- JOGO NA NUVEM (Internet Archive) ----
+    # So redireciona pro link direto: download comeca na hora,
+    # retoma de onde parou e nao passa pelo servidor.
+    if game.get("external_url"):
+        game["downloads"] += 1
+        save_games(games)
+        return redirect(game["external_url"])
 
     game_path = os.path.join(GAMES_DIR, game["file"])
     if not os.path.exists(game_path):
@@ -445,8 +526,13 @@ def delete_game(game_id):
     games = load_games()
     game = next((g for g in games if g["id"] == game_id), None)
     if game:
-        for folder, fname in [(GAMES_DIR, game["file"]), (COVERS_DIR, game["cover"])]:
-            path = os.path.join(folder, fname)
+        # Remove arquivos locais (jogo na nuvem nao tem arquivo local)
+        if game.get("file"):
+            path = os.path.join(GAMES_DIR, game["file"])
+            if os.path.exists(path):
+                os.remove(path)
+        if game.get("cover") and game["cover"] != "default.png":
+            path = os.path.join(COVERS_DIR, game["cover"])
             if os.path.exists(path):
                 os.remove(path)
         games.remove(game)

@@ -65,6 +65,67 @@
     </form>
   </div>
 
+  <!-- ============================================================
+       PUBLICAR JOGO NA NUVEM GRATIS (Internet Archive - 1 TB por jogo)
+       ============================================================ -->
+  <div class="upload-form" style="margin-top:26px;">
+    <h2>☁️ Publicar Jogo da Nuvem Grátis <span style="font-size:0.6em;color:var(--accent3);">Internet Archive · 1 TB por jogo · $0</span></h2>
+
+    <div style="color:var(--muted);font-size:0.88rem;margin-bottom:16px;line-height:1.6;">
+      Pra jogos <strong>GRANDES (10–40 GB+)</strong> que não cabem no servidor.<br>
+      1️⃣ Rode <code>python publicar_jogo.py seu_jogo.zip</code> no seu PC (sobe o arquivo pra nuvem e gera o link)<br>
+      2️⃣ Cole o link aqui embaixo → o jogo aparece na loja e o Baixar funciona normal 🎮
+    </div>
+
+    <form method="POST" action="/admin/upload_link" enctype="multipart/form-data">
+      <div class="form-group">
+        <label>📝 Título do Jogo</label>
+        <input type="text" name="title" placeholder="Ex: Need for Speed Most Wanted" required>
+      </div>
+
+      <div class="form-group">
+        <label>📋 Descrição</label>
+        <textarea name="description" placeholder="Descreva o jogo..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>🏷️ Categoria</label>
+          <select name="category" class="cat-select">
+            <option value="">Selecione uma categoria...</option>
+            {% for c in categories %}
+            <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>🖼️ Imagem de Capa (opcional)</label>
+          <input type="file" name="cover_file" accept=".png,.jpg,.jpeg,.gif,.webp">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>🔗 Link do Arquivo na Nuvem</label>
+        <input type="url" name="external_url" required
+               placeholder="https://archive.org/download/meu-jogo/meu-jogo.zip">
+        <div style="color:var(--muted);font-size:0.8rem;margin-top:6px;">
+          O script <code>publicar_jogo.py</code> gera esse link automaticamente pra você.
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>📦 Tamanho do arquivo (MB ou GB) — opcional</label>
+        <input type="text" name="size_human" placeholder="Ex: 32 GB">
+      </div>
+
+      <button type="submit" class="btn-upload">☁️ Publicar na Nuvem</button>
+      <div style="color:var(--muted);font-size:0.82rem;margin-top:10px;text-align:center;">
+        💡 O arquivo fica no Internet Archive (grátis pra sempre, sem cartão). O download continua automático e retomável.
+      </div>
+    </form>
+  </div>
+
   <!-- GAME LIST -->
   <div class="admin-games">
     <h2>🎮 Jogos Publicados ({{ games|length }})</h2>
@@ -80,6 +141,7 @@
         <div class="info">
           <h4>{{ game.title }}
             {% if game.category %} <span class="cat-badge">{{ game.category }}</span>{% endif %}
+            {% if game.external_url %} <span class="cat-badge">☁️ Nuvem</span>{% endif %}
           </h4>
           <span>
             📦 {{ "%.1f"|format(game.size / 1073741824) if game.size > 1073741824 else "%.0f"|format(game.size / 1048576) }} {{ "GB" if game.size > 1073741824 else "MB" }}
